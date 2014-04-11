@@ -3,8 +3,6 @@
     #arrow {
         font-size: 100px;
         position: absolute;
-        top: 50%;
-        left: 50%;
     }
 </style>
 <span id='arrow'>&uarr;</span>
@@ -13,7 +11,7 @@
 
     // Settings
     // --------
-    var HISTORY_SIZE = 10;
+    var HISTORY_SIZE = 5;
 
     // History
     // -------
@@ -50,10 +48,20 @@
         if ( arr.length > HISTORY_SIZE ) arr.shift();
     };
 
+    // View helpers
+    // ------------
     var rotateArrow = function( selector, deg ) {
         var el = document.getElementById( selector );
         if ( typeof el !== 'undefined' )
             el.style[ '-webkit-transform' ] = 'rotate(' + deg + 'deg)';
+    };
+
+    var followPointer = function( selector, x, y ) {
+        var el = document.getElementById( selector );
+        if ( typeof el !== 'undefined' ) {
+            el.style.left = x + 'px';
+            el.style.top = y + 'px';
+        }
     }
 
     // Main
@@ -66,8 +74,8 @@
         var timestamp = e.timeStamp;
 
         // Calculate last mouse info
-        var lastX = peek( history.x );
-        var lastY = peek( history.y );
+        var lastX = average( history.x );
+        var lastY = average( history.y );
         var lastTimestamp = peek( history.timestamp );
         var lastVelocity = peek( history.velocity );
 
@@ -105,6 +113,7 @@
         // console.log( 'history:', history );
         // console.log( '' );
         rotateArrow( 'arrow', average( history.angle ) );
+        followPointer( 'arrow', average( history.x ), average( history.y ) );
     };
 
 } )( window.document );
