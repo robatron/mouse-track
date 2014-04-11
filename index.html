@@ -3,6 +3,8 @@
     #arrow {
         font-size: 100px;
         position: absolute;
+        top: 50%;
+        right: 50%;
     }
 </style>
 <span id='arrow'>&uarr;</span>
@@ -113,7 +115,7 @@
         // console.log( 'history:', history );
         // console.log( '' );
         rotateArrow( 'arrow', average( history.angle ) );
-        followPointer( 'arrow', average( history.x ), average( history.y ) );
+        //followPointer( 'arrow', average( history.x ), average( history.y ) );
     };
 
 } )( window.document );
