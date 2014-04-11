@@ -3,17 +3,51 @@
     #arrow {
         font-size: 100px;
         position: absolute;
-        top: 50%;
-        right: 50%;
+    }
+    .info-with-bar {
+    }
+    .info-bar {
+        background-color: red;
+        width: 50%;
+        position: absolute;
+        z-index: -1;
     }
 </style>
+<table>
+    <tr>
+        <td>
+            <strong>Angle:</strong>
+        </td>
+        <td>
+            <span id='info-angle'>#</span>
+        </td>
+    </tr>
+    <tr>
+        <td>
+            <strong>Velocity:</strong>
+        </td>
+        <td>
+            <span class='info-bar info-bar-velocity'>.</span>
+            <span id='info-velocity' class='info-with-bar'>#</span>
+        </td>
+    </tr>
+    <tr>
+        <td>
+            <strong>Acceleration:</strong>
+        </td>
+        <td>
+            <span class='info-bar info-bar-acceleration'>.</span>
+            <span id='info-acceleration' class='info-with-bar'>#</span>
+        </td>
+    </tr>
+</table>
 <span id='arrow'>&uarr;</span>
 <script>
 ( function ( document ) {
 
     // Settings
     // --------
-    var HISTORY_SIZE = 5;
+    var HISTORY_SIZE = 10;
 
     // History
     // -------
@@ -52,7 +86,18 @@
 
     // View helpers
     // ------------
-    var rotateArrow = function( selector, deg ) {
+    var updateInfo = function ( angle, velocity, acceleration ) {
+        var angleEl = document.getElementById( 'info-angle' );
+        if ( typeof angleEl !== 'undefined' ) angleEl.innerHTML = angle + '&deg;';
+
+        var velocityEl = document.getElementById( 'info-velocity' );
+        if ( typeof velocityEl !== 'undefined' ) velocityEl.innerHTML = velocity + ' pix/sec';
+
+        var accelEl = document.getElementById( 'info-acceleration' );
+        if ( typeof accelEl !== 'undefined' ) accelEl.innerHTML = acceleration + ' pix/sec&sup2;';
+    };
+
+    var rotateArrow = function ( selector, deg ) {
         var el = document.getElementById( selector );
         if ( typeof el !== 'undefined' )
             el.style[ '-webkit-transform' ] = 'rotate(' + deg + 'deg)';
@@ -64,7 +109,7 @@
             el.style.left = x + 'px';
             el.style.top = y + 'px';
         }
-    }
+    };
 
     // Main
     // ----
@@ -114,8 +159,14 @@
         // console.log( 'Angle:', average( history.angle ), 'degrees')
         // console.log( 'history:', history );
         // console.log( '' );
+
         rotateArrow( 'arrow', average( history.angle ) );
-        //followPointer( 'arrow', average( history.x ), average( history.y ) );
+        followPointer( 'arrow', x, y );
+        updateInfo(
+            average( history.angle ).toFixed( 1 ),
+            average( history.velocity ).toFixed( 1 ),
+            average( history.acceleration ).toFixed( 1 )
+        );
     };
 
 } )( window.document );
