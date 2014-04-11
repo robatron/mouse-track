@@ -1,0 +1,111 @@
+<!DOCTYPE HTML>
+<style>
+    #arrow {
+        font-size: 100px;
+        position: absolute;
+        top: 50%;
+        left: 50%;
+    }
+</style>
+<span id='arrow'>&uarr;</span>
+<script>
+( function ( document ) {
+
+    // Settings
+    // --------
+    var HISTORY_SIZE = 10;
+
+    // History
+    // -------
+    var history = {
+        x: [],
+        y: [],
+        timestamp: [],
+        velocity: [],
+        acceleration: [],
+        angle: []
+    };
+
+    // Helpers
+    // -------
+    var peek = function ( arr ) {
+        var len = arr.length;
+        if ( len < 1 ) return null;
+        return arr[ len - 1 ];
+    };
+
+    var average = function ( arr ) {
+        var len = arr.length;
+        if ( len < 1 ) return 0;
+        var sum = 0;
+        for ( var i = 0; i < len; ++i ) {
+            if ( arr[ i ] !== null ) sum += arr[ i ];
+            else len - 1;
+        }
+        return ( sum / len );
+    };
+
+    var push = function ( x, arr ) {
+        arr.push( x );
+        if ( arr.length > HISTORY_SIZE ) arr.shift();
+    };
+
+    var rotateArrow = function( selector, deg ) {
+        var el = document.getElementById( selector );
+        if ( typeof el !== 'undefined' )
+            el.style[ '-webkit-transform' ] = 'rotate(' + deg + 'deg)';
+    }
+
+    // Main
+    // ----
+    document.onmousemove = function ( e ) {
+
+        // Capture current mouse info
+        var x = e.pageX;
+        var y = e.pageY;
+        var timestamp = e.timeStamp;
+
+        // Calculate last mouse info
+        var lastX = peek( history.x );
+        var lastY = peek( history.y );
+        var lastTimestamp = peek( history.timestamp );
+        var lastVelocity = peek( history.velocity );
+
+        // Calculate deltas
+        var dx = x - lastX;
+        var dy = y - lastY;
+        var dt = ( timestamp - lastTimestamp ) / 1000;
+
+        // Calculate velocity and acceleration
+        var velocity = Math.sqrt( Math.pow( dx, 2 ) + Math.pow( dy, 2 ) ) / dt;
+        var acceleration = ( velocity - lastVelocity ) / dt;
+
+        // Calculate trajectory on unit circle
+        var angle = null;
+        if ( dy !== 0 ) {
+            angle = Math.abs( Math.atan( dx / dy ) * 180 / Math.PI );               // QI
+            if      ( dy > 0 )           angle = dx > 0 ? angle + 90 : angle + 180; // QII & QIII
+            else if ( dy < 0 && dx < 0 ) angle += 270                               // QIII
+        } else angle = dx > 0 ? 90 : 270;                                           // Handle div by 0
+
+        // Record history
+        push( x, history.x );
+        push( y, history.y );
+        push( timestamp, history.timestamp );
+        push( velocity, history.velocity );
+        push( acceleration, history.acceleration );
+        push( angle, history.angle );
+
+        // Report out
+        // console.log( 'history:', history );
+        // console.log( 'dx:', dx, ',', 'dy:', dy );
+        // console.log( 'Velocity ( pix / sec ):', average( history.velocity ) );
+        // console.log( 'acceleration:', average( history.acceleration ) );
+        // console.log( 'Angle:', average( history.angle ), 'degrees')
+        // console.log( 'history:', history );
+        // console.log( '' );
+        rotateArrow( 'arrow', average( history.angle ) );
+    };
+
+} )( window.document );
+</script>
