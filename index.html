@@ -7,8 +7,7 @@
     .info-with-bar {
     }
     .info-bar {
-        background-color: red;
-        width: 50%;
+        background-color: LightGreen;
         position: absolute;
         z-index: -1;
     }
@@ -27,17 +26,8 @@
             <strong>Velocity:</strong>
         </td>
         <td>
-            <span class='info-bar info-bar-velocity'>.</span>
+            <span id='info-bar-velocity' class='info-bar'>&nbsp;</span>
             <span id='info-velocity' class='info-with-bar'>#</span>
-        </td>
-    </tr>
-    <tr>
-        <td>
-            <strong>Acceleration:</strong>
-        </td>
-        <td>
-            <span class='info-bar info-bar-acceleration'>.</span>
-            <span id='info-acceleration' class='info-with-bar'>#</span>
         </td>
     </tr>
 </table>
@@ -86,15 +76,15 @@
 
     // View helpers
     // ------------
-    var updateInfo = function ( angle, velocity, acceleration ) {
+    var updateInfo = function ( angle, velocity ) {
         var angleEl = document.getElementById( 'info-angle' );
         if ( typeof angleEl !== 'undefined' ) angleEl.innerHTML = angle + '&deg;';
 
         var velocityEl = document.getElementById( 'info-velocity' );
         if ( typeof velocityEl !== 'undefined' ) velocityEl.innerHTML = velocity + ' pix/sec';
 
-        var accelEl = document.getElementById( 'info-acceleration' );
-        if ( typeof accelEl !== 'undefined' ) accelEl.innerHTML = acceleration + ' pix/sec&sup2;';
+        var velocityBarEl = document.getElementById( 'info-bar-velocity' );
+        if ( typeof velocityBarEl !== 'undefined' ) velocityBarEl.style.width = velocity / 10 + 'px';
     };
 
     var rotateArrow = function ( selector, deg ) {
@@ -152,6 +142,13 @@
         push( angle, history.angle );
 
         // Report out
+        rotateArrow( 'arrow', average( history.angle ) );
+        followPointer( 'arrow', x, y );
+        updateInfo(
+            average( history.angle ).toFixed( 1 ),
+            average( history.velocity ).toFixed( 1 )
+        );
+
         // console.log( 'history:', history );
         // console.log( 'dx:', dx, ',', 'dy:', dy );
         // console.log( 'Velocity ( pix / sec ):', average( history.velocity ) );
@@ -159,14 +156,6 @@
         // console.log( 'Angle:', average( history.angle ), 'degrees')
         // console.log( 'history:', history );
         // console.log( '' );
-
-        rotateArrow( 'arrow', average( history.angle ) );
-        followPointer( 'arrow', x, y );
-        updateInfo(
-            average( history.angle ).toFixed( 1 ),
-            average( history.velocity ).toFixed( 1 ),
-            average( history.acceleration ).toFixed( 1 )
-        );
     };
 
 } )( window.document );
