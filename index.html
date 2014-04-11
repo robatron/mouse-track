@@ -1,162 +1,176 @@
 <!DOCTYPE HTML>
-<style>
-    #arrow {
-        font-size: 100px;
-        position: absolute;
-    }
-    .info-with-bar {
-    }
-    .info-bar {
-        background-color: LightGreen;
-        position: absolute;
-        z-index: -1;
-    }
-</style>
-<table>
-    <tr>
-        <td>
-            <strong>Angle:</strong>
-        </td>
-        <td>
-            <span id='info-angle'>#</span>
-        </td>
-    </tr>
-    <tr>
-        <td>
-            <strong>Velocity:</strong>
-        </td>
-        <td>
-            <span id='info-bar-velocity' class='info-bar'>&nbsp;</span>
-            <span id='info-velocity' class='info-with-bar'>#</span>
-        </td>
-    </tr>
-</table>
-<span id='arrow'>&uarr;</span>
-<script>
-( function ( document ) {
+<html>
 
-    // Settings
-    // --------
-    var HISTORY_SIZE = 10;
+    <head>
+        <title>mouse track thingy</title>
 
-    // History
-    // -------
-    var history = {
-        x: [],
-        y: [],
-        timestamp: [],
-        velocity: [],
-        acceleration: [],
-        angle: []
-    };
+        <style>
+            #dir-vector-arrow {
+                font-size: 100px;
+                position: absolute;
+            }
+            .info-bar {
+                background-color: LightGreen;
+                position: absolute;
+                z-index: -1;
+            }
+        </style>
+    </head>
 
-    // Helpers
-    // -------
-    var peek = function ( arr ) {
-        var len = arr.length;
-        if ( len < 1 ) return null;
-        return arr[ len - 1 ];
-    };
+    <body>
 
-    var average = function ( arr ) {
-        var len = arr.length;
-        if ( len < 1 ) return 0;
-        var sum = 0;
-        for ( var i = 0; i < len; ++i ) {
-            if ( arr[ i ] !== null ) sum += arr[ i ];
-            else len - 1;
-        }
-        return ( sum / len );
-    };
+        <!-- Info table -->
+        <table>
+            <tr>
+                <td>
+                    <strong>Angle:</strong>
+                </td>
+                <td>
+                    <span id='info-angle'>#</span>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <strong>Velocity:</strong>
+                </td>
+                <td>
+                    <span id='info-bar-velocity' class='info-bar'>&nbsp;</span>
+                    <span id='info-velocity'>#</span>
+                </td>
+            </tr>
+        </table>
 
-    var push = function ( x, arr ) {
-        arr.push( x );
-        if ( arr.length > HISTORY_SIZE ) arr.shift();
-    };
+        <!-- Direction vector arrow -->
+        <span id='dir-vector-arrow'>&uarr;</span>
 
-    // View helpers
-    // ------------
-    var updateInfo = function ( angle, velocity ) {
-        var angleEl = document.getElementById( 'info-angle' );
-        if ( typeof angleEl !== 'undefined' ) angleEl.innerHTML = angle + '&deg;';
+        <script>
+        ( function ( document ) {
 
-        var velocityEl = document.getElementById( 'info-velocity' );
-        if ( typeof velocityEl !== 'undefined' ) velocityEl.innerHTML = velocity + ' pix/sec';
+            // Settings
+            // --------
+            var HISTORY_SIZE = 10;
 
-        var velocityBarEl = document.getElementById( 'info-bar-velocity' );
-        if ( typeof velocityBarEl !== 'undefined' ) velocityBarEl.style.width = velocity / 10 + 'px';
-    };
+            // History
+            // -------
+            var history = {
+                x: [],
+                y: [],
+                timestamp: [],
+                velocity: [],
+                acceleration: [],
+                angle: []
+            };
 
-    var rotateArrow = function ( selector, deg ) {
-        var el = document.getElementById( selector );
-        if ( typeof el !== 'undefined' )
-            el.style[ '-webkit-transform' ] = 'rotate(' + deg + 'deg)';
-    };
+            // History helpers
+            // ---------------
 
-    var followPointer = function( selector, x, y ) {
-        var el = document.getElementById( selector );
-        if ( typeof el !== 'undefined' ) {
-            el.style.left = x + 'px';
-            el.style.top = y + 'px';
-        }
-    };
+            // Peek at the top element of the given array
+            var peek = function ( arr ) {
+                var len = arr.length;
+                if ( len < 1 ) return null;
+                return arr[ len - 1 ];
+            };
 
-    // Main
-    // ----
-    document.onmousemove = function ( e ) {
+            // Return the average value of the given array
+            var average = function ( arr ) {
+                var len = arr.length;
+                if ( len < 1 ) return 0;
+                var sum = 0;
+                for ( var i = 0; i < len; ++i ) {
+                    if ( arr[ i ] !== null ) sum += arr[ i ];
+                    else len - 1;
+                }
+                return ( sum / len );
+            };
 
-        // Capture current mouse info
-        var x = e.pageX;
-        var y = e.pageY;
-        var timestamp = e.timeStamp;
+            // Push an element onto the given array, remove the oldest element
+            // if array exceeds the history size
+            var push = function ( x, arr ) {
+                arr.push( x );
+                if ( arr.length > HISTORY_SIZE ) arr.shift();
+            };
 
-        // Calculate last mouse info
-        var lastX = average( history.x );
-        var lastY = average( history.y );
-        var lastTimestamp = peek( history.timestamp );
-        var lastVelocity = peek( history.velocity );
+            // View helpers
+            // ------------
 
-        // Calculate deltas
-        var dx = x - lastX;
-        var dy = y - lastY;
-        var dt = ( timestamp - lastTimestamp ) / 1000;
+            // Update info table
+            var updateInfo = function ( angle, velocity ) {
+                var angleEl = document.getElementById( 'info-angle' );
+                if ( typeof angleEl !== 'undefined' ) angleEl.innerHTML = angle + '&deg;';
 
-        // Calculate velocity and acceleration
-        var velocity = Math.sqrt( Math.pow( dx, 2 ) + Math.pow( dy, 2 ) ) / dt;
-        var acceleration = ( velocity - lastVelocity ) / dt;
+                var velocityEl = document.getElementById( 'info-velocity' );
+                if ( typeof velocityEl !== 'undefined' ) velocityEl.innerHTML = velocity + ' pix/sec';
 
-        // Calculate trajectory on unit circle
-        var angle = null;
-        if ( dy !== 0 ) {
-            angle = Math.abs( Math.atan( dx / dy ) * 180 / Math.PI );               // QI
-            if      ( dy > 0 )           angle = dx > 0 ? angle + 90 : angle + 180; // QII & QIII
-            else if ( dy < 0 && dx < 0 ) angle += 270                               // QIII
-        } else angle = dx > 0 ? 90 : 270;                                           // Handle div by 0
+                var velocityBarEl = document.getElementById( 'info-bar-velocity' );
+                if ( typeof velocityBarEl !== 'undefined' ) velocityBarEl.style.width = velocity / 10 + 'px';
+            };
 
-        // Record history
-        push( x, history.x );
-        push( y, history.y );
-        push( timestamp, history.timestamp );
-        push( velocity, history.velocity );
-        push( acceleration, history.acceleration );
-        push( angle, history.angle );
+            // Rotate direction vector arrow by given degree angle
+            var rotateArrow = function ( deg ) {
+                var el = document.getElementById( 'dir-vector-arrow' );
+                if ( typeof el !== 'undefined' )
+                    el.style[ '-webkit-transform' ] = 'rotate(' + deg + 'deg)';
+            };
 
-        // Report out
-        rotateArrow( 'arrow', average( history.angle ) );
-        followPointer( 'arrow', x, y );
-        updateInfo(
-            average( history.angle ).toFixed( 1 ),
-            average( history.velocity ).toFixed( 1 )
-        );
+            // Set direction vector arrow position
+            var setArrowPos = function( x, y ) {
+                var el = document.getElementById( 'dir-vector-arrow' );
+                if ( typeof el !== 'undefined' ) {
+                    el.style.left = x + 'px';
+                    el.style.top = y + 'px';
+                }
+            };
 
-        // console.log( 'history:', history );
-        // console.log( 'dx:', dx, ',', 'dy:', dy );
-        // console.log( 'Velocity ( pix / sec ):', average( history.velocity ) );
-        // console.log( 'acceleration:', average( history.acceleration ) );
-        // console.log( 'Angle:', average( history.angle ), 'degrees')
-        // console.log( 'history:', history );
-        // console.log( '' );
-    };
+            // Main
+            // ----
+            document.onmousemove = function ( e ) {
 
-} )( window.document );
-</script>
+                // Capture current mouse info
+                var x = e.pageX;
+                var y = e.pageY;
+                var timestamp = e.timeStamp;
+
+                // Calculate last mouse info from historical average
+                var lastX = average( history.x );
+                var lastY = average( history.y );
+                var lastTimestamp = peek( history.timestamp );
+                var lastVelocity = peek( history.velocity );
+
+                // Calculate deltas between this and last time
+                var dx = x - lastX;
+                var dy = y - lastY;
+                var dt = ( timestamp - lastTimestamp ) / 1000;
+
+                // Calculate velocity and acceleration
+                var velocity = Math.sqrt( Math.pow( dx, 2 ) + Math.pow( dy, 2 ) ) / dt;
+                var acceleration = ( velocity - lastVelocity ) / dt;
+
+                // Calculate trajectory on unit circle
+                var angle = null;
+                if ( dy !== 0 ) {
+                    angle = Math.abs( Math.atan( dx / dy ) * 180 / Math.PI );               // QI
+                    if      ( dy > 0 )           angle = dx > 0 ? angle + 90 : angle + 180; // QII & QIII
+                    else if ( dy < 0 && dx < 0 ) angle += 270                               // QIII
+                } else angle = dx > 0 ? 90 : 270;                                           // Handle div by 0
+
+                // Record history
+                push( x, history.x );
+                push( y, history.y );
+                push( timestamp, history.timestamp );
+                push( velocity, history.velocity );
+                push( acceleration, history.acceleration );
+                push( angle, history.angle );
+
+                // Update the view
+                rotateArrow( average( history.angle ) );
+                setArrowPos( x, y );
+                updateInfo(
+                    average( history.angle ).toFixed( 1 ),
+                    average( history.velocity ).toFixed( 1 )
+                );
+            };
+
+        } )( window.document );
+        </script>
+    </body>
+</html>
