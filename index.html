@@ -118,8 +118,12 @@
             // Rotate direction vector arrow by given degree angle
             var rotateArrow = function ( deg ) {
                 var el = document.getElementById( 'dir-vector-arrow' );
-                if ( typeof el !== 'undefined' )
-                    el.style[ '-webkit-transform' ] = 'rotate(' + deg + 'deg)';
+                if ( typeof el !== 'undefined' ) {
+                    var transform = 'rotate(' + deg + 'deg)';
+                    el.style[ 'transform' ]         = transform;
+                    el.style[ '-webkit-transform' ] = transform;
+                    el.style[ '-ms-transform' ]     = transform;
+                }
             };
 
             // Set direction vector arrow position
