@@ -162,9 +162,9 @@
                 // Calculate trajectory on unit circle
                 var angle = null;
                 if ( dy !== 0 ) {
-                    angle = Math.abs( Math.atan( dx / dy ) * 180 / Math.PI );               // QI
+                    angle = Math.abs( Math.atan( dx / dy ) * 180 / Math.PI );               // Quadrant I
                     if      ( dy > 0 )           angle = dx > 0 ? angle + 90 : angle + 180; // QII & QIII
-                    else if ( dy < 0 && dx < 0 ) angle += 270                               // QIII
+                    else if ( dy < 0 && dx < 0 ) angle += 270                               // QIV
                 } else angle = dx > 0 ? 90 : 270;                                           // Handle div by 0
 
                 // Record history
